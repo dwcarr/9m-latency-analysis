@@ -1,0 +1,22 @@
+{
+  "movement_min_step_deg": 0.1,
+  "movement_max_gap_s": 0.75,
+  "movement_min_magnitude_deg": 1.0,
+  "step_like_max_target_updates": 1,
+  "step_like_min_largest_step_fraction": 0.8,
+  "response_max_s": 2.0,
+  "settle_hold_s": 0.05,
+  "tolerance_floor_deg": 0.15,
+  "tolerance_fraction_of_move": 0.05,
+  "lag_max_s": 0.4,
+  "lag_step_s": 0.005,
+  "lag_max_samples": 800,
+  "shot_pre_s": 0.12,
+  "shot_post_s": 0.5,
+  "shot_baseline_ignore_s": 0.02,
+  "shot_stable_target_range_deg": 0.5,
+  "shot_recovery_floor_deg": 0.05,
+  "shot_recovery_fraction_of_peak": 0.2,
+  "shot_valid_vector_min_deg": 0.25,
+  "trigger_pair_max_s": 1.0
+}

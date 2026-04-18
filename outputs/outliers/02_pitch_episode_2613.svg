@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 382" role="img">
+<style>
+.axis{stroke:#718096;stroke-width:1}.grid{stroke:#e5eaf0;stroke-width:1}.label{font:12px sans-serif;fill:#5a6675}.title{font:700 18px sans-serif;fill:#20242a}.subtitle{font:12px sans-serif;fill:#5a6675}.panel-title{font:700 13px sans-serif;fill:#20242a}
+</style>
+<rect width="980" height="382" fill="#ffffff"/>
+<text class="title" x="70" y="28">Pitch low-latency outlier: episode 2613</text>
+<text class="subtitle" x="70" y="50">Arrival 0 ms; settling not observed; trajectory lag not observed.</text>
+<line x1="70" y1="76" x2="94" y2="76" stroke="#48525f" stroke-width="2" stroke-dasharray="6 4"/>
+<text class="label" x="100" y="80">commanded target</text>
+<line x1="236" y1="76" x2="260" y2="76" stroke="#1769aa" stroke-width="2"/>
+<text class="label" x="266" y="80">actual current</text>
+<text class="panel-title" x="70" y="96">Pitch position</text>
+<line class="grid" x1="70" y1="338.00" x2="956" y2="338.00"/>
+<text class="label" x="62" y="342.00" text-anchor="end">-3.8</text>
+<line class="grid" x1="70" y1="280.50" x2="956" y2="280.50"/>
+<text class="label" x="62" y="284.50" text-anchor="end">-0.6</text>
+<line class="grid" x1="70" y1="223.00" x2="956" y2="223.00"/>
+<text class="label" x="62" y="227.00" text-anchor="end">2.5</text>
+<line class="grid" x1="70" y1="165.50" x2="956" y2="165.50"/>
+<text class="label" x="62" y="169.50" text-anchor="end">5.6</text>
+<line class="grid" x1="70" y1="108.00" x2="956" y2="108.00"/>
+<text class="label" x="62" y="112.00" text-anchor="end">8.8</text>
+<line class="grid" x1="70.00" y1="108" x2="70.00" y2="338"/>
+<text class="label" x="70.00" y="358" text-anchor="middle">-0.36</text>
+<line class="grid" x1="217.67" y1="108" x2="217.67" y2="338"/>
+<text class="label" x="217.67" y="358" text-anchor="middle">-0.27</text>
+<line class="grid" x1="365.33" y1="108" x2="365.33" y2="338"/>
+<text class="label" x="365.33" y="358" text-anchor="middle">-0.17</text>
+<line class="grid" x1="513.00" y1="108" x2="513.00" y2="338"/>
+<text class="label" x="513.00" y="358" text-anchor="middle">-0.07</text>
+<line class="grid" x1="660.67" y1="108" x2="660.67" y2="338"/>
+<text class="label" x="660.67" y="358" text-anchor="middle">0.03</text>
+<line class="grid" x1="808.33" y1="108" x2="808.33" y2="338"/>
+<text class="label" x="808.33" y="358" text-anchor="middle">0.13</text>
+<line class="grid" x1="956.00" y1="108" x2="956.00" y2="338"/>
+<text class="label" x="956.00" y="358" text-anchor="middle">0.23</text>
+<line x1="616.66" y1="108" x2="616.66" y2="338" stroke="#5a6675" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="620.66" y="120.00" transform="rotate(-35 620.66 120.00)">start</text>
+<line x1="630.73" y1="108" x2="630.73" y2="338" stroke="#5a6675" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="634.73" y="120.00" transform="rotate(-35 634.73 120.00)">final target</text>
+<line x1="631.31" y1="108" x2="631.31" y2="338" stroke="#347a3a" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="635.31" y="120.00" transform="rotate(-35 635.31 120.00)">arrive</text>
+<line x1="679.19" y1="108" x2="679.19" y2="338" stroke="#9a3412" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="683.19" y="164.00" transform="rotate(-35 683.19 164.00)">next target</text>
+<path d="M 100.06,300.24 L 114.42,301.19 L 129.05,301.19 L 146.82,302.24 L 160.51,302.60 L 176.25,303.37 L 204.60,303.91 L 222.63,303.91 L 233.46,304.40 L 250.88,304.40 L 264.05,304.79 L 279.03,305.18 L 293.89,305.18 L 309.69,305.61 L 326.47,305.61 L 338.95,306.07 L 354.58,306.41 L 370.28,306.41 L 385.20,306.89 L 398.87,306.89 L 415.23,307.29 L 429.94,307.67 L 460.75,308.14 L 474.53,308.14 L 490.58,308.58 L 504.29,308.94 L 534.84,309.41 L 552.31,130.26 L 565.61,309.83 L 594.64,310.22 L 610.02,310.66 L 631.31,311.10 L 654.00,311.46 L 669.68,311.46 L 685.64,311.93 L 700.30,146.05 L 716.86,312.32 L 730.44,312.32 L 747.92,312.78 L 775.36,147.89 L 789.89,313.76 L 807.68,314.00 L 820.48,314.00 L 837.99,314.46 L 853.52,314.82 L 867.95,314.82 L 886.85,315.30 L 896.96,315.30 L 911.02,315.74 L 925.94,263.58" fill="none" stroke="#48525f" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M 100.06,295.38 L 114.42,295.91 L 129.05,296.50 L 146.82,297.26 L 160.51,298.06 L 176.25,298.85 L 204.60,300.24 L 222.63,300.83 L 233.46,301.39 L 250.88,301.86 L 264.05,302.29 L 279.03,302.65 L 293.89,302.98 L 309.69,303.34 L 326.47,303.64 L 338.95,303.97 L 354.58,304.24 L 370.28,304.53 L 385.20,304.87 L 398.87,305.13 L 415.23,305.39 L 429.94,305.69 L 460.75,306.22 L 474.53,306.45 L 490.58,306.72 L 504.29,306.98 L 534.84,307.51 L 552.31,307.77 L 565.61,308.04 L 594.64,307.81 L 610.02,307.74 L 631.31,307.87 L 654.00,308.10 L 669.68,308.01 L 685.64,308.01 L 700.30,308.10 L 716.86,308.27 L 730.44,308.20 L 747.92,308.14 L 775.36,308.37 L 789.89,308.60 L 807.68,308.67 L 820.48,308.40 L 837.99,307.87 L 853.52,307.44 L 867.95,307.61 L 886.85,307.77 L 896.96,308.30 L 911.02,309.13 L 925.94,310.12" fill="none" stroke="#1769aa" stroke-width="2"/>
+<line class="axis" x1="70" y1="338" x2="956" y2="338"/>
+<line class="axis" x1="70" y1="108" x2="70" y2="338"/>
+<text class="label" x="18" y="223.00" transform="rotate(-90 18 223.00)" text-anchor="middle">degrees</text>
+<text class="label" x="513.0" y="374" text-anchor="middle">time relative to event (s)</text>
+</svg>

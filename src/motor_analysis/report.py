@@ -9,6 +9,7 @@ from typing import Iterable
 import numpy as np
 
 from .analysis import AnalysisConfig, regression_summary
+from .system_id import filter_system_id_step_rows
 
 
 def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -62,10 +63,13 @@ def write_markdown_report(
         "- `is_step_like_target` marks episodes where the target movement is dominated by one jump rather than many small updates."
     )
     lines.append(
+        f"- The system-ID step subset keeps step-like targets but excludes final-position arrival below {config.system_id_min_arrival_latency_s * 1000:.0f} ms, because those near-zero cases were ruled out as invalid for this data."
+    )
+    lines.append(
         "- `arrival_latency_s` is measured after the last target update in an episode: the first current sample within the final target tolerance."
     )
     lines.append(
-        "- `settling_time_s` requires the current position to remain inside tolerance for the configured hold time."
+        "- `settling_time_s` uses a tighter settling band than arrival and marks the end of the configured hold window: the current position must remain inside that band continuously for the full hold time."
     )
     lines.append(
         "- `trajectory_lag_s` estimates control-loop delay during the commanded movement by delaying the target trajectory and choosing the delay with the lowest RMSE to actual position."
@@ -90,7 +94,7 @@ def write_markdown_report(
     lines.append("## Movement Response")
     lines.append("")
     lines.extend(_movement_findings(movement_summary, regressions))
-    lines.extend(_step_latency_findings(movement_rows))
+    lines.extend(_step_latency_findings(movement_rows, config.system_id_min_arrival_latency_s))
     lines.append("")
     lines.append(
         _markdown_table(
@@ -168,6 +172,10 @@ def write_markdown_report(
     lines.append("- `shot_summary.csv`: all-shot and stable-shot disturbance summaries.")
     lines.append("- `exemplars.csv`: selected plot examples and the SVG path for each example.")
     lines.append("- `plots/*.svg`: exemplary time-series plots for movements and firing responses.")
+    lines.append("- `motion_disturbance_examples.csv`: moving-target fire examples selected across starting angles.")
+    lines.append("- `motion_disturbance.html`: time-series plots for disturbance under motion.")
+    lines.append("- `system_id_step_responses.csv`: preserved step-target subset with velocity metrics.")
+    lines.append("- `system_id.html`: peak-velocity and velocity-rise diagnostic plots.")
     lines.append("- `report.html`: visual companion report.")
     lines.append("")
 
@@ -181,7 +189,11 @@ def write_html_report(
     movement_summary: list[dict[str, object]],
     shot_summary: list[dict[str, object]],
     exemplar_rows: list[dict[str, object]],
+    config: AnalysisConfig | None = None,
 ) -> None:
+    if config is None:
+        config = AnalysisConfig()
+    min_latency_ms = config.system_id_min_arrival_latency_s * 1000.0
     path.parent.mkdir(parents=True, exist_ok=True)
     regressions = regression_summary(movement_rows, "arrival_latency_s") + regression_summary(
         movement_rows, "trajectory_lag_s"
@@ -314,8 +326,8 @@ def write_html_report(
   <p>{html.escape("The target stream contains both discrete commands and streamed ramps. The analysis groups same-direction target changes into movement episodes, then reports final-position arrival/settling and a trajectory-lag estimate.")}</p>
   {_svg_latency_scatter(movement_rows, "arrival_latency_s", "Final-position arrival latency")}
   <p class="note">Each point is a movement episode with a finite final-position arrival measurement. Large moves can have short final-position arrival after the final target update because the motor has already followed most of the streamed movement.</p>
-  {_svg_latency_scatter(_step_like_rows(movement_rows), "arrival_latency_s", "Final-position arrival latency, step targets only")}
-  <p class="note">This filtered view keeps only episodes where the target move is dominated by one jump. It removes ramp/sweep episodes that are better treated as many small movements.</p>
+  {_svg_latency_scatter(_system_id_step_rows(movement_rows, config.system_id_min_arrival_latency_s), "arrival_latency_s", "Final-position arrival latency, step targets only")}
+  <p class="note">This filtered view keeps only episodes where the target move is dominated by one jump and excludes final-position arrival below {min_latency_ms:.0f} ms. It removes ramp/sweep episodes and the ruled-out near-zero arrival artifacts.</p>
   {_svg_latency_scatter(movement_rows, "trajectory_lag_s", "Trajectory lag during movement")}
   <h3>Movement Exemplars</h3>
   {_html_exemplar_figures(exemplar_rows, "movement")}
@@ -380,17 +392,18 @@ def _movement_findings(
     return lines
 
 
-def _step_latency_findings(rows: list[dict[str, object]]) -> list[str]:
+def _step_latency_findings(rows: list[dict[str, object]], min_latency_s: float) -> list[str]:
     lines: list[str] = []
-    step_rows = _step_like_rows(rows)
+    raw_step_rows = [row for row in rows if int(row.get("is_step_like_target", 0)) == 1]
+    step_rows = _system_id_step_rows(rows, min_latency_s)
     finite_step_rows = [
         row
         for row in step_rows
         if np.isfinite(float(row.get("arrival_latency_s", np.nan)))
     ]
     lines.append(
-        f"- Step-target filtered arrival plot keeps {len(step_rows)} of {len(rows)} movement episodes; "
-        f"{len(finite_step_rows)} have finite final-position arrival and appear as points."
+        f"- Step-target filtered arrival plot keeps {len(step_rows)} of {len(raw_step_rows)} step-like episodes "
+        f"after excluding arrival below {min_latency_s * 1000:.0f} ms; {len(finite_step_rows)} appear as points."
     )
     for axis in ("pitch", "yaw"):
         axis_rows = [
@@ -530,8 +543,8 @@ def _svg_latency_scatter(rows: list[dict[str, object]], y_key: str, title: str) 
 """
 
 
-def _step_like_rows(rows: list[dict[str, object]]) -> list[dict[str, object]]:
-    return [row for row in rows if int(row.get("is_step_like_target", 0)) == 1]
+def _system_id_step_rows(rows: list[dict[str, object]], min_latency_s: float) -> list[dict[str, object]]:
+    return filter_system_id_step_rows(rows, min_latency_s)
 
 
 def _markdown_table(rows: list[dict[str, object]], columns: list[str]) -> str:

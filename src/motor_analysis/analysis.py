@@ -35,6 +35,8 @@ class AnalysisConfig:
     settle_hold_s: float = 0.05
     tolerance_floor_deg: float = 0.15
     tolerance_fraction_of_move: float = 0.05
+    settling_tolerance_floor_deg: float = 0.03
+    settling_tolerance_fraction_of_move: float = 0.02
     lag_max_s: float = 0.40
     lag_step_s: float = 0.005
     lag_max_samples: int = 800
@@ -46,6 +48,7 @@ class AnalysisConfig:
     shot_recovery_fraction_of_peak: float = 0.20
     shot_valid_vector_min_deg: float = 0.25
     trigger_pair_max_s: float = 1.0
+    system_id_min_arrival_latency_s: float = 0.05
 
 
 def build_overview(streams: dict[str, ScalarStream]) -> list[dict[str, float | int | str]]:
@@ -308,7 +311,11 @@ def _measure_episode(
     direction = 1.0 if delta_deg > 0.0 else -1.0
     magnitude = abs(delta_deg)
     shape = _target_shape_metrics(target.time_s, target.value, start_idx, last_idx, magnitude, config)
-    tolerance = max(config.tolerance_floor_deg, config.tolerance_fraction_of_move * magnitude)
+    arrival_tolerance = max(config.tolerance_floor_deg, config.tolerance_fraction_of_move * magnitude)
+    settling_tolerance = max(
+        config.settling_tolerance_floor_deg,
+        config.settling_tolerance_fraction_of_move * magnitude,
+    )
     post_end_s = min(end_s + config.response_max_s, next_start_s)
 
     arrival_latency_s = np.nan
@@ -322,11 +329,11 @@ def _measure_episode(
 
     if len(post_t):
         if direction > 0.0:
-            reached = post_v >= final_target - tolerance
+            reached = post_v >= final_target - arrival_tolerance
             overshoot_abs_deg = max(0.0, float(np.max(post_v - final_target)))
             overshoot_signed_deg = overshoot_abs_deg
         else:
-            reached = post_v <= final_target + tolerance
+            reached = post_v <= final_target + arrival_tolerance
             overshoot_abs_deg = max(0.0, float(np.max(final_target - post_v)))
             overshoot_signed_deg = -overshoot_abs_deg
 
@@ -337,7 +344,7 @@ def _measure_episode(
         settling_time_s = _first_stable_time(
             post_t,
             abs_error,
-            tolerance,
+            settling_tolerance,
             config.settle_hold_s,
             end_s,
         )
@@ -365,7 +372,8 @@ def _measure_episode(
         "target_largest_step_deg": shape["target_largest_step_deg"],
         "target_largest_step_fraction": shape["target_largest_step_fraction"],
         "is_step_like_target": shape["is_step_like_target"],
-        "tolerance_deg": tolerance,
+        "tolerance_deg": arrival_tolerance,
+        "settling_tolerance_deg": settling_tolerance,
         "arrival_latency_s": arrival_latency_s,
         "settling_time_s": settling_time_s,
         "overshoot_signed_deg": overshoot_signed_deg,

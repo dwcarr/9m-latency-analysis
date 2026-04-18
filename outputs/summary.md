@@ -7,8 +7,9 @@ This report is generated from `motor.rrd` by `scripts/analyze_motor.py`.
 - Scalar streams are extracted from the Rerun recording and aligned to seconds from the first scalar sample.
 - Target updates are grouped into same-direction movement episodes, because the recording contains both step-like commands and streamed ramp/sweep commands.
 - `is_step_like_target` marks episodes where the target movement is dominated by one jump rather than many small updates.
+- The system-ID step subset keeps step-like targets but excludes final-position arrival below 50 ms, because those near-zero cases were ruled out as invalid for this data.
 - `arrival_latency_s` is measured after the last target update in an episode: the first current sample within the final target tolerance.
-- `settling_time_s` requires the current position to remain inside tolerance for the configured hold time.
+- `settling_time_s` uses a tighter settling band than arrival and marks the end of the configured hold window: the current position must remain inside that band continuously for the full hold time.
 - `trajectory_lag_s` estimates control-loop delay during the commanded movement by delaying the target trajectory and choosing the delay with the lowest RMSE to actual position.
 - Fire disturbance is measured as current-minus-target error relative to the pre-fire baseline. Stable-target shots are reported separately because moving targets confound pure mechanical deflection.
 
@@ -25,6 +26,8 @@ This report is generated from `motor.rrd` by `scripts/analyze_motor.py`.
 | settle_hold_s | 0.0500 |
 | tolerance_floor_deg | 0.1500 |
 | tolerance_fraction_of_move | 0.0500 |
+| settling_tolerance_floor_deg | 0.0300 |
+| settling_tolerance_fraction_of_move | 0.0200 |
 | lag_max_s | 0.4000 |
 | lag_step_s | 0.0050 |
 | lag_max_samples | 800 |
@@ -36,6 +39,7 @@ This report is generated from `motor.rrd` by `scripts/analyze_motor.py`.
 | shot_recovery_fraction_of_peak | 0.2000 |
 | shot_valid_vector_min_deg | 0.2500 |
 | trigger_pair_max_s | 1.000 |
+| system_id_min_arrival_latency_s | 0.0500 |
 
 ## Dataset Overview
 
@@ -53,29 +57,29 @@ This report is generated from `motor.rrd` by `scripts/analyze_motor.py`.
 
 - Pitch median trajectory lag is 70 ms; yaw median trajectory lag is 50 ms.
 - Pitch median final-position arrival is 95 ms; yaw median final-position arrival is 65 ms.
-- Pitch median settling time is 186 ms; yaw median settling time is 129 ms.
+- Pitch median settling time is 288 ms; yaw median settling time is 252 ms.
 - Median overshoot is near zero for both axes, but p90 overshoot is 0.15 deg for pitch and 0.31 deg for yaw.
 - Interpretation: yaw looks faster in this recording, while its upper-tail overshoot is larger. That pattern is consistent with a more aggressive or less damped yaw loop; pitch may also be affected by elevation load, gravity, or different gearing. Treat this as a data-driven hypothesis, not proof of the mechanical cause.
 - Pitch arrival latency has low linear fit strength (R2=0.0113); this is evidence against a simple linear magnitude-latency relationship under this episode definition.
 - Yaw arrival latency has low linear fit strength (R2=0.0180); this is evidence against a simple linear magnitude-latency relationship under this episode definition.
-- Step-target filtered arrival plot keeps 2440 of 5620 movement episodes; 996 have finite final-position arrival and appear as points.
-- Pitch step-target median final-position arrival is 184 ms across 443 finite-arrival episodes.
-- Yaw step-target median final-position arrival is 83 ms across 553 finite-arrival episodes.
+- Step-target filtered arrival plot keeps 693 of 2440 step-like episodes after excluding arrival below 50 ms; 693 appear as points.
+- Pitch step-target median final-position arrival is 227 ms across 287 finite-arrival episodes.
+- Yaw step-target median final-position arrival is 97 ms across 406 finite-arrival episodes.
 
 | axis | magnitude_bin | episodes | arrival_n | arrival_median_s | settling_n | settling_median_s | trajectory_lag_n | trajectory_lag_median_s | overshoot_median_deg |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| pitch | all | 2843 | 924 | 0.0948 | 727 | 0.1859 | 1835 | 0.0700 | 0.0000 |
-| pitch | 0-2 deg | 786 | 209 | 0.0943 | 151 | 0.1810 | 439 | 0.0700 | 0.0000 |
-| pitch | 2-5 deg | 1003 | 238 | 0.1266 | 192 | 0.2008 | 687 | 0.0700 | 0.0000 |
-| pitch | 5-10 deg | 613 | 227 | 0.0839 | 191 | 0.1812 | 444 | 0.0750 | 0.0000 |
-| pitch | 10-20 deg | 324 | 188 | 0.0859 | 160 | 0.2880 | 221 | 0.0700 | 0.0036 |
-| pitch | 20+ deg | 117 | 62 | 0.0086 | 33 | 0.1033 | 44 | 0.0750 | 0.0000 |
-| yaw | all | 2777 | 1111 | 0.0648 | 670 | 0.1295 | 1822 | 0.0500 | 0.0021 |
-| yaw | 0-2 deg | 659 | 317 | 0.0722 | 136 | 0.1250 | 425 | 0.0450 | 0.0307 |
-| yaw | 2-5 deg | 785 | 235 | 0.0586 | 121 | 0.1313 | 485 | 0.0500 | 0.0000 |
-| yaw | 5-10 deg | 606 | 256 | 0.0592 | 204 | 0.1262 | 410 | 0.0500 | 0.0553 |
-| yaw | 10-20 deg | 356 | 119 | 0.0172 | 60 | 0.1191 | 238 | 0.0500 | 0.0000 |
-| yaw | 20+ deg | 371 | 184 | 0.0914 | 149 | 0.2079 | 264 | 0.0500 | 0.0014 |
+| pitch | all | 2843 | 924 | 0.0948 | 580 | 0.2883 | 1835 | 0.0700 | 0.0000 |
+| pitch | 0-2 deg | 786 | 209 | 0.0943 | 84 | 0.3117 | 439 | 0.0700 | 0.0000 |
+| pitch | 2-5 deg | 1003 | 238 | 0.1266 | 132 | 0.2787 | 687 | 0.0700 | 0.0000 |
+| pitch | 5-10 deg | 613 | 227 | 0.0839 | 176 | 0.2528 | 444 | 0.0750 | 0.0000 |
+| pitch | 10-20 deg | 324 | 188 | 0.0859 | 158 | 0.3476 | 221 | 0.0700 | 0.0036 |
+| pitch | 20+ deg | 117 | 62 | 0.0086 | 30 | 0.1423 | 44 | 0.0750 | 0.0000 |
+| yaw | all | 2777 | 1111 | 0.0648 | 532 | 0.2525 | 1822 | 0.0500 | 0.0021 |
+| yaw | 0-2 deg | 659 | 317 | 0.0722 | 68 | 0.2531 | 425 | 0.0450 | 0.0307 |
+| yaw | 2-5 deg | 785 | 235 | 0.0586 | 79 | 0.2444 | 485 | 0.0500 | 0.0000 |
+| yaw | 5-10 deg | 606 | 256 | 0.0592 | 187 | 0.2327 | 410 | 0.0500 | 0.0553 |
+| yaw | 10-20 deg | 356 | 119 | 0.0172 | 58 | 0.1404 | 238 | 0.0500 | 0.0000 |
+| yaw | 20+ deg | 371 | 184 | 0.0914 | 140 | 0.2991 | 264 | 0.0500 | 0.0014 |
 
 ### Movement Exemplars
 
@@ -158,4 +162,8 @@ Firing response, stable target, non-trivial disturbance: event 77, stable_target
 - `shot_summary.csv`: all-shot and stable-shot disturbance summaries.
 - `exemplars.csv`: selected plot examples and the SVG path for each example.
 - `plots/*.svg`: exemplary time-series plots for movements and firing responses.
+- `motion_disturbance_examples.csv`: moving-target fire examples selected across starting angles.
+- `motion_disturbance.html`: time-series plots for disturbance under motion.
+- `system_id_step_responses.csv`: preserved step-target subset with velocity metrics.
+- `system_id.html`: peak-velocity and velocity-rise diagnostic plots.
 - `report.html`: visual companion report.

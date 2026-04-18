@@ -215,6 +215,7 @@ def write_html_report(
             "arrival_latency_s",
             "Final-position arrival latency, step targets only",
             y_max_ms=330.0,
+            trendline_min_magnitude_deg=4.5,
         ),
         f"Step-target final-position arrival after excluding ramp/sweep episodes and arrival below {min_latency_ms:.0f} ms.",
         figure_counter,
@@ -562,6 +563,7 @@ def _svg_latency_scatter(
     y_key: str,
     title: str,
     y_max_ms: float | None = None,
+    trendline_min_magnitude_deg: float | None = None,
 ) -> str:
     points = [
         row
@@ -607,6 +609,16 @@ def _svg_latency_scatter(
         y = sy(float(row[y_key]) * 1000.0)
         circles.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="2.2" fill="{colors[axis]}" opacity="0.38"/>')
 
+    trendlines = _svg_latency_trendlines(
+        points,
+        y_key,
+        colors,
+        sx,
+        sy,
+        x_max,
+        trendline_min_magnitude_deg,
+    )
+
     x_ticks = _ticks(x_min, x_max, 6)
     y_ticks = _ticks(y_min, y_max, 5)
     grid = []
@@ -629,11 +641,61 @@ def _svg_latency_scatter(
   <line x1="{left}" y1="{top + plot_h}" x2="{left + plot_w}" y2="{top + plot_h}" stroke="#718096"/>
   <line x1="{left}" y1="{top}" x2="{left}" y2="{top + plot_h}" stroke="#718096"/>
   {''.join(circles)}
+  {''.join(trendlines)}
   {''.join(labels)}
   <text x="{left + plot_w / 2}" y="{height - 2}" text-anchor="middle" font-size="12" fill="#5a6675">movement magnitude (deg)</text>
   <text transform="translate(14 {top + plot_h / 2}) rotate(-90)" text-anchor="middle" font-size="12" fill="#5a6675">latency (ms)</text>
 </svg>
 """
+
+
+def _svg_latency_trendlines(
+    points: list[dict[str, object]],
+    y_key: str,
+    colors: dict[str, str],
+    sx,
+    sy,
+    x_axis_max: float,
+    min_magnitude_deg: float | None,
+) -> list[str]:
+    if min_magnitude_deg is None:
+        return []
+
+    lines = []
+    for axis in ("pitch", "yaw"):
+        axis_points = [
+            row
+            for row in points
+            if row["axis"] == axis and float(row["magnitude_deg"]) > min_magnitude_deg
+        ]
+        if len(axis_points) < 2:
+            continue
+
+        x_values = np.array([float(row["magnitude_deg"]) for row in axis_points], dtype=float)
+        y_values = np.array([float(row[y_key]) * 1000.0 for row in axis_points], dtype=float)
+        if len(np.unique(x_values)) < 2:
+            continue
+
+        slope, intercept = np.polyfit(x_values, y_values, 1)
+        x0 = max(min_magnitude_deg, float(np.nanmin(x_values)))
+        x1 = min(x_axis_max, float(np.nanmax(x_values)))
+        if x1 <= x0:
+            continue
+
+        y0 = slope * x0 + intercept
+        y1 = slope * x1 + intercept
+        lines.append(
+            f'<line x1="{sx(x0):.2f}" y1="{sy(y0):.2f}" x2="{sx(x1):.2f}" y2="{sy(y1):.2f}" '
+            f'stroke="{colors[axis]}" stroke-width="2.4" stroke-dasharray="7 5" opacity="0.95"/>'
+        )
+        label_x = sx(x1)
+        label_y = sy(y1) - (8 if axis == "pitch" else -14)
+        lines.append(
+            f'<text x="{label_x:.2f}" y="{label_y:.2f}" text-anchor="end" font-size="10" '
+            f'fill="{colors[axis]}">{axis} fit &gt; {min_magnitude_deg:.1f} deg</text>'
+        )
+
+    return lines
 
 
 def _system_id_step_rows(rows: list[dict[str, object]], min_latency_s: float) -> list[dict[str, object]]:

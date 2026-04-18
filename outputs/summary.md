@@ -59,33 +59,37 @@ This report is generated from `motor.rrd` by `scripts/analyze_motor.py`.
 
 ## Movement Response
 
-- Pitch median trajectory lag is 70 ms; yaw median trajectory lag is 50 ms.
-- Pitch median final-position arrival is 95 ms; yaw median final-position arrival is 65 ms.
-- Pitch median settling time is 288 ms; yaw median settling time is 252 ms.
-- Median overshoot is near zero for both axes, but p90 overshoot is 0.15 deg for pitch and 0.31 deg for yaw.
-- Interpretation: yaw looks faster in this recording, while its upper-tail overshoot is larger. That pattern is consistent with a more aggressive or less damped yaw loop; pitch may also be affected by elevation load, gravity, or different gearing. Treat this as a data-driven hypothesis, not proof of the mechanical cause.
+- The response summary below uses the same filtered step-response subset as Figure 2: step-like target movements with final-position arrival at or above the configured minimum latency.
+- Pitch median step-response arrival is 227 ms; yaw median step-response arrival is 97 ms.
+- Pitch median step-response settling time is 351 ms; yaw median step-response settling time is 270 ms.
+- Median overshoot remains near zero for both axes, while p90 overshoot is 0.01 deg for pitch and 0.19 deg for yaw.
+- Interpretation: yaw is still faster on clean step arrival, but the filtered table avoids the ramp/sweep and near-zero-arrival artifacts that distorted the previous broad movement summary.
 - Step-target filtered arrival plot keeps 693 of 2440 step-like episodes after excluding arrival below 50 ms; 693 appear as points.
 - Pitch step-target median final-position arrival is 227 ms across 287 finite-arrival episodes.
 - Yaw step-target median final-position arrival is 97 ms across 406 finite-arrival episodes.
 
-| axis | magnitude_bin | episodes | arrival_n | arrival_median_s | settling_n | settling_median_s | trajectory_lag_n | trajectory_lag_median_s | overshoot_median_deg |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| pitch | all | 2843 | 924 | 0.0948 | 580 | 0.2883 | 1835 | 0.0700 | 0.0000 |
-| pitch | 0-2 deg | 786 | 209 | 0.0943 | 84 | 0.3117 | 439 | 0.0700 | 0.0000 |
-| pitch | 2-5 deg | 1003 | 238 | 0.1266 | 132 | 0.2787 | 687 | 0.0700 | 0.0000 |
-| pitch | 5-10 deg | 613 | 227 | 0.0839 | 176 | 0.2528 | 444 | 0.0750 | 0.0000 |
-| pitch | 10-20 deg | 324 | 188 | 0.0859 | 158 | 0.3476 | 221 | 0.0700 | 0.0036 |
-| pitch | 20+ deg | 117 | 62 | 0.0086 | 30 | 0.1423 | 44 | 0.0750 | 0.0000 |
-| yaw | all | 2777 | 1111 | 0.0648 | 532 | 0.2525 | 1822 | 0.0500 | 0.0021 |
-| yaw | 0-2 deg | 659 | 317 | 0.0722 | 68 | 0.2531 | 425 | 0.0450 | 0.0307 |
-| yaw | 2-5 deg | 785 | 235 | 0.0586 | 79 | 0.2444 | 485 | 0.0500 | 0.0000 |
-| yaw | 5-10 deg | 606 | 256 | 0.0592 | 187 | 0.2327 | 410 | 0.0500 | 0.0553 |
-| yaw | 10-20 deg | 356 | 119 | 0.0172 | 58 | 0.1404 | 238 | 0.0500 | 0.0000 |
-| yaw | 20+ deg | 371 | 184 | 0.0914 | 140 | 0.2991 | 264 | 0.0500 | 0.0014 |
+| axis | step_size_bin | steps | step_size_median_deg | arrival_median_ms | arrival_p90_ms | settling_n | settling_median_ms | trajectory_lag_n | trajectory_lag_median_ms | max_velocity_median_deg_s | velocity_rise_90_median_ms | overshoot_median_deg | overshoot_p90_deg |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| pitch | all | 287 | 6.411 | 226.68 | 247.79 | 259 | 351.38 | 263 | 65.00 | 99.43 | 76.52 | 0.0036 | 0.0124 |
+| pitch | 1-2 deg | 64 | 1.000 | 143.42 | 183.83 | 57 | 315.65 | 57 | 65.00 | 14.91 | 53.65 | 0.0040 | 0.0127 |
+| pitch | 2-5 deg | 62 | 3.353 | 210.97 | 234.36 | 44 | 342.48 | 53 | 70.00 | 55.52 | 70.01 | 0.0054 | 0.6044 |
+| pitch | 5-10 deg | 76 | 8.184 | 228.93 | 237.30 | 75 | 353.30 | 70 | 75.00 | 109.59 | 77.43 | 0.0036 | 0.0054 |
+| pitch | 10-15 deg | 62 | 12.00 | 242.82 | 246.65 | 61 | 359.57 | 61 | 0.0000 | 155.04 | 87.86 | 0.0054 | 0.0054 |
+| pitch | 15-20 deg | 20 | 19.00 | 252.70 | 259.01 | 20 | 376.40 | 20 | 0.0000 | 215.27 | 101.01 | 0.0018 | 0.0054 |
+| pitch | 20-30 deg | 1 | 28.88 | 267.75 | 267.75 | 1 | 398.57 | 1 | 85.00 | 316.46 | 103.88 | 0.0036 | 0.0036 |
+| pitch | 30+ deg | 2 | 35.16 | 302.76 | 317.70 | 1 | 404.66 | 1 | 0.0000 | 404.25 | 113.91 | 0.0027 | 0.0049 |
+| yaw | all | 406 | 4.573 | 97.00 | 169.57 | 268 | 269.70 | 362 | 35.00 | 100.52 | 61.86 | 0.0822 | 0.1908 |
+| yaw | 1-2 deg | 159 | 1.319 | 77.12 | 85.29 | 43 | 254.49 | 134 | 0.0000 | 31.24 | 48.71 | 0.0826 | 0.2415 |
+| yaw | 2-5 deg | 49 | 3.209 | 92.29 | 97.62 | 34 | 256.71 | 37 | 45.00 | 67.11 | 52.32 | 0.1422 | 0.2045 |
+| yaw | 5-10 deg | 88 | 7.005 | 105.22 | 114.22 | 83 | 264.13 | 85 | 0.0000 | 135.41 | 65.62 | 0.1440 | 0.2039 |
+| yaw | 10-15 deg | 10 | 12.90 | 122.57 | 126.93 | 10 | 274.70 | 10 | 45.00 | 215.97 | 78.96 | 0.0252 | 0.0466 |
+| yaw | 15-20 deg | 14 | 17.09 | 138.01 | 154.29 | 14 | 291.35 | 13 | 45.00 | 248.72 | 80.90 | 0.0108 | 0.0198 |
+| yaw | 20-30 deg | 46 | 26.25 | 159.37 | 168.14 | 44 | 303.09 | 44 | 45.00 | 342.34 | 93.20 | 0.0018 | 0.0027 |
+| yaw | 30+ deg | 40 | 32.14 | 179.26 | 207.44 | 40 | 314.46 | 39 | 45.00 | 409.69 | 103.05 | 0.0018 | 0.0036 |
 
-**Table 3.** Movement response summary by axis and movement magnitude bin.
+**Table 3.** Step-response summary using the same system-ID subset shown in Figure 2.
 
-_The `_n` fields are counts of valid finite measurements for that metric within the row's axis/bin, not additional movement episodes. `arrival_n` counts episodes where the actual position entered the final-target arrival band before the next target command or response-window cutoff. `settling_n` counts episodes where the actual position stayed inside the tighter settling band continuously for the configured 50 ms hold window. `trajectory_lag_n` counts episodes with enough samples during the commanded movement to fit a finite target-delay/RMSE estimate._
+_This table uses the Figure 2/system-ID subset, so `steps` is the count of plotted clean step responses in that axis/bin and every row has a finite final-position arrival at or above the configured minimum latency. `settling_n` counts steps where the actual position stayed inside the tighter settling band continuously for the configured 50 ms hold window. `trajectory_lag_n` counts steps with enough samples during the commanded movement to fit a finite target-delay/RMSE estimate. The bins are intentionally broader than the original movement summary because the filtered step-response subset is smaller._
 
 ### Movement Exemplars
 
@@ -169,6 +173,9 @@ Firing response, stable target, non-trivial disturbance: event 77, stable_target
 - `plots/*.svg`: exemplary time-series plots for movements and firing responses.
 - `motion_disturbance_examples.csv`: moving-target fire examples selected across starting angles.
 - `motion_disturbance.html`: time-series plots for disturbance under motion.
+- `yaw_10_20_diagnostic_summary.csv`: 2 degree bins for the anomalous yaw 10-20 deg range.
+- `yaw_10_20_diagnostics.html`: example time series from each yaw 10-20 deg sub-bin.
 - `system_id_step_responses.csv`: preserved step-target subset with velocity metrics.
+- `system_id_step_summary.csv`: magnitude-bin summary of the preserved step-target subset.
 - `system_id.html`: peak-velocity and velocity-rise diagnostic plots.
 - `report.html`: visual companion report.

@@ -36,6 +36,7 @@ def write_markdown_report(
     overview_rows: list[dict[str, object]],
     movement_rows: list[dict[str, object]],
     movement_summary: list[dict[str, object]],
+    system_id_summary_rows: list[dict[str, object]],
     shot_rows: list[dict[str, object]],
     shot_summary: list[dict[str, object]],
     exemplar_rows: list[dict[str, object]],
@@ -101,25 +102,29 @@ def write_markdown_report(
     lines.append("")
     lines.append("## Movement Response")
     lines.append("")
-    lines.extend(_movement_findings(movement_summary))
+    lines.extend(_movement_findings(system_id_summary_rows))
     lines.extend(_step_latency_findings(movement_rows, config.system_id_min_arrival_latency_s))
     lines.append("")
     lines.append(
         _markdown_labeled_table(
-            movement_summary,
+            system_id_summary_rows,
             [
                 "axis",
-                "magnitude_bin",
-                "episodes",
-                "arrival_n",
-                "arrival_median_s",
+                "step_size_bin",
+                "steps",
+                "step_size_median_deg",
+                "arrival_median_ms",
+                "arrival_p90_ms",
                 "settling_n",
-                "settling_median_s",
+                "settling_median_ms",
                 "trajectory_lag_n",
-                "trajectory_lag_median_s",
+                "trajectory_lag_median_ms",
+                "max_velocity_median_deg_s",
+                "velocity_rise_90_median_ms",
                 "overshoot_median_deg",
+                "overshoot_p90_deg",
             ],
-            "Movement response summary by axis and movement magnitude bin.",
+            "Step-response summary using the same system-ID subset shown in Figure 2.",
             table_counter,
         )
     )
@@ -171,7 +176,10 @@ def write_markdown_report(
     lines.append("- `plots/*.svg`: exemplary time-series plots for movements and firing responses.")
     lines.append("- `motion_disturbance_examples.csv`: moving-target fire examples selected across starting angles.")
     lines.append("- `motion_disturbance.html`: time-series plots for disturbance under motion.")
+    lines.append("- `yaw_10_20_diagnostic_summary.csv`: 2 degree bins for the anomalous yaw 10-20 deg range.")
+    lines.append("- `yaw_10_20_diagnostics.html`: example time series from each yaw 10-20 deg sub-bin.")
     lines.append("- `system_id_step_responses.csv`: preserved step-target subset with velocity metrics.")
+    lines.append("- `system_id_step_summary.csv`: magnitude-bin summary of the preserved step-target subset.")
     lines.append("- `system_id.html`: peak-velocity and velocity-rise diagnostic plots.")
     lines.append("- `report.html`: visual companion report.")
     lines.append("")
@@ -184,6 +192,7 @@ def write_html_report(
     overview_rows: list[dict[str, object]],
     movement_rows: list[dict[str, object]],
     movement_summary: list[dict[str, object]],
+    system_id_summary_rows: list[dict[str, object]],
     shot_summary: list[dict[str, object]],
     exemplar_rows: list[dict[str, object]],
     config: AnalysisConfig | None = None,
@@ -218,20 +227,24 @@ def write_html_report(
     movement_figures = _html_exemplar_figures(exemplar_rows, "movement", figure_counter)
     shot_figures = _html_exemplar_figures(exemplar_rows, "shot", figure_counter)
     movement_table = _html_labeled_table(
-        movement_summary,
+        system_id_summary_rows,
         [
             "axis",
-            "magnitude_bin",
-            "episodes",
-            "arrival_n",
-            "arrival_median_s",
+            "step_size_bin",
+            "steps",
+            "step_size_median_deg",
+            "arrival_median_ms",
+            "arrival_p90_ms",
             "settling_n",
-            "settling_median_s",
+            "settling_median_ms",
             "trajectory_lag_n",
-            "trajectory_lag_median_s",
+            "trajectory_lag_median_ms",
+            "max_velocity_median_deg_s",
+            "velocity_rise_90_median_ms",
             "overshoot_median_deg",
+            "overshoot_p90_deg",
         ],
-        "Movement response summary by axis and movement magnitude bin.",
+        "Step-response summary using the same system-ID subset shown in Figure 2.",
         table_counter,
     )
     shot_table = _html_labeled_table(
@@ -415,7 +428,7 @@ def write_html_report(
   {trajectory_figure}
   <h3>Movement Exemplars</h3>
   {movement_figures}
-  <h3>Movement Summary</h3>
+  <h3>Step Response Summary</h3>
   {movement_table}
   {_html_movement_summary_n_note()}
   <h2>Shooting Impact</h2>
@@ -433,35 +446,33 @@ def write_html_report(
 
 
 def _movement_findings(
-    movement_summary: list[dict[str, object]],
+    system_id_summary_rows: list[dict[str, object]],
 ) -> list[str]:
     lines: list[str] = []
-    pitch_all = _find_row(movement_summary, axis="pitch", magnitude_bin="all")
-    yaw_all = _find_row(movement_summary, axis="yaw", magnitude_bin="all")
+    pitch_all = _find_row(system_id_summary_rows, axis="pitch", step_size_bin="all")
+    yaw_all = _find_row(system_id_summary_rows, axis="yaw", step_size_bin="all")
     if pitch_all and yaw_all:
         lines.append(
-            "- Pitch median trajectory lag is "
-            f"{_fmt_ms(pitch_all['trajectory_lag_median_s'])}; yaw median trajectory lag is "
-            f"{_fmt_ms(yaw_all['trajectory_lag_median_s'])}."
+            "- The response summary below uses the same filtered step-response subset as Figure 2: "
+            "step-like target movements with final-position arrival at or above the configured minimum latency."
         )
         lines.append(
-            "- Pitch median final-position arrival is "
-            f"{_fmt_ms(pitch_all['arrival_median_s'])}; yaw median final-position arrival is "
-            f"{_fmt_ms(yaw_all['arrival_median_s'])}."
+            "- Pitch median step-response arrival is "
+            f"{_fmt_ms_value(pitch_all['arrival_median_ms'])}; yaw median step-response arrival is "
+            f"{_fmt_ms_value(yaw_all['arrival_median_ms'])}."
         )
         lines.append(
-            "- Pitch median settling time is "
-            f"{_fmt_ms(pitch_all['settling_median_s'])}; yaw median settling time is "
-            f"{_fmt_ms(yaw_all['settling_median_s'])}."
+            "- Pitch median step-response settling time is "
+            f"{_fmt_ms_value(pitch_all['settling_median_ms'])}; yaw median step-response settling time is "
+            f"{_fmt_ms_value(yaw_all['settling_median_ms'])}."
         )
         lines.append(
-            "- Median overshoot is near zero for both axes, but p90 overshoot is "
+            "- Median overshoot remains near zero for both axes, while p90 overshoot is "
             f"{_fmt_deg(pitch_all['overshoot_p90_deg'])} for pitch and "
             f"{_fmt_deg(yaw_all['overshoot_p90_deg'])} for yaw."
         )
         lines.append(
-            "- Interpretation: yaw looks faster in this recording, while its upper-tail overshoot is larger. "
-            "That pattern is consistent with a more aggressive or less damped yaw loop; pitch may also be affected by elevation load, gravity, or different gearing. Treat this as a data-driven hypothesis, not proof of the mechanical cause."
+            "- Interpretation: yaw is still faster on clean step arrival, but the filtered table avoids the ramp/sweep and near-zero-arrival artifacts that distorted the previous broad movement summary."
         )
     return lines
 
@@ -745,12 +756,12 @@ def _config_rows(config: AnalysisConfig) -> list[dict[str, object]]:
 
 def _movement_summary_n_note(markdown: bool) -> list[str]:
     text = (
-        "The `_n` fields are counts of valid finite measurements for that metric within the row's axis/bin, "
-        "not additional movement episodes. `arrival_n` counts episodes where the actual position entered the "
-        "final-target arrival band before the next target command or response-window cutoff. `settling_n` counts "
-        "episodes where the actual position stayed inside the tighter settling band continuously for the configured "
-        "50 ms hold window. `trajectory_lag_n` counts episodes with enough samples during the commanded movement to "
-        "fit a finite target-delay/RMSE estimate."
+        "This table uses the Figure 2/system-ID subset, so `steps` is the count of plotted clean step responses "
+        "in that axis/bin and every row has a finite final-position arrival at or above the configured minimum "
+        "latency. `settling_n` counts steps where the actual position stayed inside the tighter settling band "
+        "continuously for the configured 50 ms hold window. `trajectory_lag_n` counts steps with enough samples "
+        "during the commanded movement to fit a finite target-delay/RMSE estimate. The bins are intentionally "
+        "broader than the original movement summary because the filtered step-response subset is smaller."
     )
     if markdown:
         return [f"_{text}_"]
@@ -790,6 +801,16 @@ def _fmt_ms(value: object) -> str:
     if not np.isfinite(number):
         return ""
     return f"{number * 1000.0:.0f} ms"
+
+
+def _fmt_ms_value(value: object) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return ""
+    if not np.isfinite(number):
+        return ""
+    return f"{number:.0f} ms"
 
 
 def _fmt_deg(value: object) -> str:

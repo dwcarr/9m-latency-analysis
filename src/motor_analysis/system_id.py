@@ -68,11 +68,39 @@ def build_system_id_step_response_rows(
                 "starting_actual_deg": float(zero_order_hold(current.time_s, current.value, np.array([command_time_s]))[0]),
                 "arrival_latency_s": float(row["arrival_latency_s"]),
                 "settling_time_s": float(row["settling_time_s"]),
+                "overshoot_signed_deg": float(row["overshoot_signed_deg"]),
+                "overshoot_abs_deg": float(row["overshoot_abs_deg"]),
                 "trajectory_lag_s": float(row["trajectory_lag_s"]),
                 **metrics,
             }
         )
     return rows
+
+
+def summarize_system_id_step_responses(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Summarize the same filtered step-response dataset shown in Figure 2."""
+
+    bins = [
+        (1.0, 2.0, "1-2 deg"),
+        (2.0, 5.0, "2-5 deg"),
+        (5.0, 10.0, "5-10 deg"),
+        (10.0, 15.0, "10-15 deg"),
+        (15.0, 20.0, "15-20 deg"),
+        (20.0, 30.0, "20-30 deg"),
+        (30.0, float("inf"), "30+ deg"),
+    ]
+    summary: list[dict[str, object]] = []
+    for axis in AXES:
+        axis_rows = [row for row in rows if row["axis"] == axis]
+        summary.append(_system_id_summary_row(axis, "all", axis_rows))
+        for lo, hi, label in bins:
+            subset = [
+                row
+                for row in axis_rows
+                if lo <= _float(row.get("step_size_deg", np.nan)) < hi
+            ]
+            summary.append(_system_id_summary_row(axis, label, subset))
+    return summary
 
 
 def write_system_id_page(
@@ -87,6 +115,47 @@ def write_system_id_page(
         _system_id_html(system_id_rows, config),
         encoding="utf-8",
     )
+
+
+def _system_id_summary_row(
+    axis: str,
+    step_size_bin: str,
+    rows: list[dict[str, object]],
+) -> dict[str, object]:
+    arrival = _finite_values(rows, "arrival_latency_s")
+    settling = _finite_values(rows, "settling_time_s")
+    lag = _finite_values(rows, "trajectory_lag_s")
+    step_size = _finite_values(rows, "step_size_deg")
+    velocity = _finite_values(rows, "max_velocity_magnitude_deg_s")
+    velocity_rise = _finite_values(rows, "velocity_rise_time_90_s")
+    overshoot = _finite_values(rows, "overshoot_abs_deg")
+    return {
+        "axis": axis,
+        "step_size_bin": step_size_bin,
+        "steps": len(rows),
+        "step_size_median_deg": _safe_percentile(step_size, 50),
+        "arrival_median_ms": _safe_percentile(arrival * 1000.0, 50),
+        "arrival_p90_ms": _safe_percentile(arrival * 1000.0, 90),
+        "settling_n": int(len(settling)),
+        "settling_median_ms": _safe_percentile(settling * 1000.0, 50),
+        "trajectory_lag_n": int(len(lag)),
+        "trajectory_lag_median_ms": _safe_percentile(lag * 1000.0, 50),
+        "max_velocity_median_deg_s": _safe_percentile(velocity, 50),
+        "velocity_rise_90_median_ms": _safe_percentile(velocity_rise * 1000.0, 50),
+        "overshoot_median_deg": _safe_percentile(overshoot, 50),
+        "overshoot_p90_deg": _safe_percentile(overshoot, 90),
+    }
+
+
+def _finite_values(rows: list[dict[str, object]], key: str) -> np.ndarray:
+    values = np.array([_float(row.get(key, np.nan)) for row in rows], dtype=float)
+    return values[np.isfinite(values)]
+
+
+def _safe_percentile(values: np.ndarray, percentile: float) -> float:
+    if len(values) == 0:
+        return np.nan
+    return float(np.percentile(values, percentile))
 
 
 def _velocity_metrics_for_step(

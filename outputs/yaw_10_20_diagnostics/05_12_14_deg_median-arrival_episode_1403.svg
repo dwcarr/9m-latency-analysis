@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 382" role="img">
+<style>
+.axis{stroke:#718096;stroke-width:1}.grid{stroke:#e5eaf0;stroke-width:1}.label{font:12px sans-serif;fill:#5a6675}.title{font:700 18px sans-serif;fill:#20242a}.subtitle{font:12px sans-serif;fill:#5a6675}.panel-title{font:700 13px sans-serif;fill:#20242a}
+</style>
+<rect width="980" height="382" fill="#ffffff"/>
+<text class="title" x="70" y="28">Yaw 12-14 deg median-arrival: episode 1403</text>
+<text class="subtitle" x="70" y="50">Arrival 21 ms; settling 193 ms; trajectory lag 75 ms.</text>
+<line x1="70" y1="76" x2="94" y2="76" stroke="#48525f" stroke-width="2" stroke-dasharray="6 4"/>
+<text class="label" x="100" y="80">commanded target</text>
+<line x1="236" y1="76" x2="260" y2="76" stroke="#c94f2d" stroke-width="2"/>
+<text class="label" x="266" y="80">actual current</text>
+<text class="panel-title" x="70" y="96">Yaw position</text>
+<line class="grid" x1="70" y1="338.00" x2="956" y2="338.00"/>
+<text class="label" x="62" y="342.00" text-anchor="end">9.4</text>
+<line class="grid" x1="70" y1="280.50" x2="956" y2="280.50"/>
+<text class="label" x="62" y="284.50" text-anchor="end">13.5</text>
+<line class="grid" x1="70" y1="223.00" x2="956" y2="223.00"/>
+<text class="label" x="62" y="227.00" text-anchor="end">17.7</text>
+<line class="grid" x1="70" y1="165.50" x2="956" y2="165.50"/>
+<text class="label" x="62" y="169.50" text-anchor="end">21.9</text>
+<line class="grid" x1="70" y1="108.00" x2="956" y2="108.00"/>
+<text class="label" x="62" y="112.00" text-anchor="end">26.0</text>
+<line class="grid" x1="70.00" y1="108" x2="70.00" y2="338"/>
+<text class="label" x="70.00" y="358" text-anchor="middle">-0.37</text>
+<line class="grid" x1="217.67" y1="108" x2="217.67" y2="338"/>
+<text class="label" x="217.67" y="358" text-anchor="middle">-0.25</text>
+<line class="grid" x1="365.33" y1="108" x2="365.33" y2="338"/>
+<text class="label" x="365.33" y="358" text-anchor="middle">-0.12</text>
+<line class="grid" x1="513.00" y1="108" x2="513.00" y2="338"/>
+<text class="label" x="513.00" y="358" text-anchor="middle">-0.00</text>
+<line class="grid" x1="660.67" y1="108" x2="660.67" y2="338"/>
+<text class="label" x="660.67" y="358" text-anchor="middle">0.12</text>
+<line class="grid" x1="808.33" y1="108" x2="808.33" y2="338"/>
+<text class="label" x="808.33" y="358" text-anchor="middle">0.24</text>
+<line class="grid" x1="956.00" y1="108" x2="956.00" y2="338"/>
+<text class="label" x="956.00" y="358" text-anchor="middle">0.37</text>
+<line x1="515.76" y1="108" x2="515.76" y2="338" stroke="#5a6675" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="519.76" y="120.00" transform="rotate(-35 519.76 120.00)">start</text>
+<line x1="698.07" y1="108" x2="698.07" y2="338" stroke="#5a6675" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="702.07" y="120.00" transform="rotate(-35 702.07 120.00)">final target</text>
+<line x1="723.04" y1="108" x2="723.04" y2="338" stroke="#347a3a" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="727.04" y="120.00" transform="rotate(-35 727.04 120.00)">arrive</text>
+<line x1="930.92" y1="108" x2="930.92" y2="338" stroke="#8a5a00" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="934.92" y="142.00" transform="rotate(-35 934.92 142.00)">settled</text>
+<line x1="938.10" y1="108" x2="938.10" y2="338" stroke="#9a3412" stroke-width="1.2" opacity="0.55"/>
+<text class="label" x="942.10" y="164.00" transform="rotate(-35 942.10 164.00)">next target</text>
+<path d="M 95.08,227.97 L 106.49,227.97 L 118.89,227.97 L 130.49,227.97 L 145.28,227.97 L 157.04,251.15 L 168.25,251.15 L 179.13,251.15 L 191.20,251.15 L 203.36,251.15 L 216.43,315.74 L 228.31,315.74 L 239.34,315.74 L 251.61,315.74 L 266.06,315.74 L 276.50,284.28 L 287.64,284.28 L 299.60,284.28 L 313.45,284.28 L 324.11,284.28 L 338.49,285.66 L 348.09,285.66 L 359.86,285.66 L 372.42,285.66 L 386.62,285.66 L 396.84,304.70 L 408.62,304.70 L 420.37,304.70 L 432.64,304.70 L 444.78,304.70 L 456.91,304.70 L 468.74,297.52 L 481.63,297.52 L 494.68,297.52 L 507.09,297.52 L 517.67,299.04 L 529.31,299.04 L 541.65,299.04 L 553.26,299.04 L 567.34,299.04 L 577.96,137.99 L 590.21,137.99 L 601.45,137.99 L 614.61,137.99 L 627.36,137.99 L 637.83,138.12 L 650.77,138.12 L 662.54,138.12 L 674.60,138.12 L 688.95,138.12 L 698.70,132.05 L 710.65,132.05 L 723.04,132.05 L 735.83,132.05 L 748.41,132.05 L 759.92,134.54 L 770.89,134.54 L 782.58,134.54 L 794.91,134.54 L 807.04,134.54 L 818.87,134.67 L 831.21,134.67 L 843.76,134.67 L 856.59,134.67 L 868.40,134.67 L 879.93,130.26 L 892.30,130.26 L 903.37,130.26 L 916.07,130.26 L 930.92,130.26" fill="none" stroke="#48525f" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M 95.08,228.53 L 106.49,228.66 L 118.89,226.94 L 130.49,225.35 L 145.28,223.46 L 157.04,222.59 L 168.25,222.99 L 179.13,224.90 L 191.20,228.53 L 203.36,233.23 L 216.43,238.54 L 228.31,243.41 L 239.34,248.60 L 251.61,254.19 L 266.06,261.37 L 276.50,269.87 L 287.64,279.93 L 299.60,291.36 L 313.45,300.97 L 324.11,306.83 L 338.49,307.38 L 348.09,303.33 L 359.86,296.27 L 372.42,289.14 L 386.62,283.16 L 396.84,279.68 L 408.62,279.21 L 420.37,281.57 L 432.64,286.26 L 444.78,291.68 L 456.91,296.62 L 468.74,301.24 L 481.63,304.27 L 494.68,304.82 L 507.09,303.45 L 517.67,300.82 L 529.31,298.68 L 541.65,296.75 L 553.26,295.75 L 567.34,295.93 L 577.96,296.85 L 590.21,297.76 L 601.45,297.89 L 614.61,296.47 L 627.36,291.23 L 637.83,280.52 L 650.77,263.09 L 662.54,239.91 L 674.60,213.87 L 688.95,188.29 L 698.70,165.81 L 710.65,149.14 L 723.04,139.47 L 735.83,136.22 L 748.41,136.92 L 759.92,138.80 L 770.89,140.44 L 782.58,142.11 L 794.91,142.18 L 807.04,141.16 L 818.87,139.55 L 831.21,138.08 L 843.76,136.79 L 856.59,135.52 L 868.40,134.78 L 879.93,134.66 L 892.30,134.75 L 903.37,134.13 L 916.07,133.91 L 930.92,133.51" fill="none" stroke="#c94f2d" stroke-width="2"/>
+<line class="axis" x1="70" y1="338" x2="956" y2="338"/>
+<line class="axis" x1="70" y1="108" x2="70" y2="338"/>
+<text class="label" x="18" y="223.00" transform="rotate(-90 18 223.00)" text-anchor="middle">degrees</text>
+<text class="label" x="513.0" y="374" text-anchor="middle">time relative to event (s)</text>
+</svg>

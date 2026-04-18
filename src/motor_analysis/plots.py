@@ -202,6 +202,74 @@ def write_motion_disturbance_page(
     return manifest
 
 
+def write_yaw_10_20_diagnostic_page(
+    output_dir: Path,
+    streams: dict[str, ScalarStream],
+    movement_rows: list[dict[str, object]],
+    config: AnalysisConfig,
+    *,
+    bin_width_deg: float = 2.0,
+    examples_per_bin: int = 3,
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    """
+    Write a focused diagnostic page for anomalous yaw 10-20 deg movements.
+
+    The main movement summary uses wide magnitude bins. This page splits the
+    yaw 10-20 deg band into narrower bins and plots low/median/high arrival
+    examples from each bin so data-quality issues are visible.
+    """
+
+    plot_dir = output_dir / "yaw_10_20_diagnostics"
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    rows = [
+        row
+        for row in movement_rows
+        if row["axis"] == "yaw" and 10.0 <= float(row["magnitude_deg"]) < 20.0
+    ]
+    summary_rows = _yaw_10_20_summary_rows(rows, bin_width_deg)
+    selected = _choose_yaw_10_20_examples(rows, bin_width_deg, examples_per_bin)
+    manifest: list[dict[str, object]] = []
+
+    for index, (selection_label, row) in enumerate(selected, start=1):
+        bin_label = _magnitude_bin_label(float(row["magnitude_deg"]), bin_width_deg)
+        file_name = f"{index:02d}_{_slug(bin_label)}_{selection_label}_episode_{int(row['episode_idx'])}.svg"
+        description = _yaw_10_20_description(selection_label, row)
+        _write_movement_plot(
+            plot_dir / file_name,
+            streams,
+            row,
+            config,
+            f"Yaw {bin_label} {selection_label}: episode {int(row['episode_idx'])}",
+        )
+        manifest.append(
+            {
+                "selection": selection_label,
+                "magnitude_bin": bin_label,
+                "axis": "yaw",
+                "episode_idx": int(row["episode_idx"]),
+                "file": f"yaw_10_20_diagnostics/{file_name}",
+                "magnitude_deg": float(row["magnitude_deg"]),
+                "duration_s": float(row["duration_s"]),
+                "target_hold_after_s": float(row["target_hold_after_s"]),
+                "target_update_count": int(row["target_update_count"]),
+                "target_largest_step_fraction": float(row["target_largest_step_fraction"]),
+                "is_step_like_target": int(row["is_step_like_target"]),
+                "arrival_latency_s": float(row["arrival_latency_s"]),
+                "settling_time_s": float(row["settling_time_s"]),
+                "trajectory_lag_s": float(row["trajectory_lag_s"]),
+                "initial_target_deg": float(row["initial_target_deg"]),
+                "final_target_deg": float(row["final_target_deg"]),
+                "description": description,
+            }
+        )
+
+    (output_dir / "yaw_10_20_diagnostics.html").write_text(
+        _yaw_10_20_html(summary_rows, manifest),
+        encoding="utf-8",
+    )
+    return summary_rows, manifest
+
+
 def _choose_movement(
     rows: list[dict[str, object]],
     axis: str,
@@ -378,6 +446,84 @@ def _choose_motion_disturbance_examples(
         selected.append(best_idx)
 
     return sorted((candidates[idx] for idx in selected), key=_starting_angle_sort_key)
+
+
+def _yaw_10_20_summary_rows(
+    rows: list[dict[str, object]],
+    bin_width_deg: float,
+) -> list[dict[str, object]]:
+    summary: list[dict[str, object]] = []
+    start = 10.0
+    while start < 20.0:
+        stop = min(20.0, start + bin_width_deg)
+        subset = [
+            row
+            for row in rows
+            if start <= float(row["magnitude_deg"]) < stop
+        ]
+        finite_arrivals = _finite_array(subset, "arrival_latency_s")
+        arrivals_ge_50 = finite_arrivals[finite_arrivals >= 0.05]
+        finite_settling = _finite_array(subset, "settling_time_s")
+        finite_lag = _finite_array(subset, "trajectory_lag_s")
+        step_like = [row for row in subset if int(row.get("is_step_like_target", 0)) == 1]
+        target_updates = _finite_array(subset, "target_update_count")
+        largest_fraction = _finite_array(subset, "target_largest_step_fraction")
+        hold_after = _finite_array(subset, "target_hold_after_s")
+        durations = _finite_array(subset, "duration_s")
+        summary.append(
+            {
+                "magnitude_bin": f"{start:.0f}-{stop:.0f} deg",
+                "episodes": len(subset),
+                "step_like_n": len(step_like),
+                "arrival_n": int(len(finite_arrivals)),
+                "arrival_lt_50ms_n": int(np.sum(finite_arrivals < 0.05)),
+                "arrival_median_ms": _safe_median_ms(finite_arrivals),
+                "arrival_ge_50ms_median_ms": _safe_median_ms(arrivals_ge_50),
+                "settling_n": int(len(finite_settling)),
+                "settling_median_ms": _safe_median_ms(finite_settling),
+                "trajectory_lag_n": int(len(finite_lag)),
+                "trajectory_lag_median_ms": _safe_median_ms(finite_lag),
+                "target_update_count_median": _safe_median(target_updates),
+                "target_largest_step_fraction_median": _safe_median(largest_fraction),
+                "duration_median_s": _safe_median(durations),
+                "target_hold_lt_200ms_n": int(np.sum(hold_after < 0.20)),
+            }
+        )
+        start = stop
+    return summary
+
+
+def _choose_yaw_10_20_examples(
+    rows: list[dict[str, object]],
+    bin_width_deg: float,
+    examples_per_bin: int,
+) -> list[tuple[str, dict[str, object]]]:
+    selected: list[tuple[str, dict[str, object]]] = []
+    start = 10.0
+    while start < 20.0:
+        stop = min(20.0, start + bin_width_deg)
+        subset = [
+            row
+            for row in rows
+            if start <= float(row["magnitude_deg"]) < stop
+            and _finite(row.get("arrival_latency_s"))
+        ]
+        subset.sort(key=lambda row: float(row["arrival_latency_s"]))
+        if subset:
+            picks = [
+                ("low-arrival", subset[0]),
+                ("median-arrival", subset[len(subset) // 2]),
+                ("high-arrival", subset[-1]),
+            ][:examples_per_bin]
+            seen: set[int] = set()
+            for label, row in picks:
+                episode_idx = int(row["episode_idx"])
+                if episode_idx in seen:
+                    continue
+                seen.add(episode_idx)
+                selected.append((label, row))
+        start = stop
+    return selected
 
 
 def _starting_angle_sort_key(row: dict[str, object]) -> tuple[float, float, int]:
@@ -884,6 +1030,53 @@ def _motion_disturbance_html(
 """
 
 
+def _yaw_10_20_html(
+    summary_rows: list[dict[str, object]],
+    exemplar_rows: list[dict[str, object]],
+) -> str:
+    figures = []
+    for row in exemplar_rows:
+        figures.append(
+            "<figure>"
+            f'<img src="{html.escape(str(row["file"]))}" alt="yaw {html.escape(str(row["magnitude_bin"]))} episode {row["episode_idx"]}">'
+            f"<figcaption>{html.escape(str(row['description']))}</figcaption>"
+            "</figure>"
+        )
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaw 10-20 Degree Diagnostics</title>
+  <style>
+    body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #20242a; background: #f6f8fa; }}
+    main {{ max-width: 1180px; margin: 0 auto; padding: 30px 18px 54px; }}
+    h1 {{ margin: 0 0 8px; font-size: 32px; }}
+    p {{ color: #5a6675; line-height: 1.45; }}
+    figure {{ margin: 22px 0 34px; }}
+    img {{ width: 100%; display: block; background: #fff; border: 1px solid #c9d1db; border-radius: 8px; }}
+    figcaption {{ color: #5a6675; font-size: 13px; margin-top: 8px; }}
+    table {{ border-collapse: collapse; width: 100%; background: #fff; border: 1px solid #c9d1db; border-radius: 8px; overflow: hidden; display: block; overflow-x: auto; }}
+    th, td {{ padding: 8px 10px; border-bottom: 1px solid #e2e7ee; text-align: left; white-space: nowrap; font-size: 13px; }}
+    th {{ background: #eef2f6; }}
+    code {{ background: #e9edf2; padding: 1px 4px; border-radius: 4px; }}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Yaw 10-20 Degree Movement Diagnostics</h1>
+  <p>This page isolates the yaw 10-20 deg magnitude band because its aggregate arrival and settling values are outliers. The table breaks the band into 2 deg bins and explicitly counts finite arrivals below 50 ms, which are suspicious in this data set.</p>
+  <p>For each 2 deg bin, the plots show the lowest-arrival, median-arrival, and highest-arrival finite examples. The captions include target shape and hold-time fields so ramp-like episodes, short holds, and near-final-target artifacts can be spotted quickly.</p>
+  <h2>2 Degree Summary</h2>
+  {_diagnostic_table(summary_rows)}
+  <h2>Example Time Series</h2>
+  {''.join(figures)}
+</main>
+</body>
+</html>
+"""
+
+
 def _motion_disturbance_table(rows: list[dict[str, object]]) -> str:
     columns = [
         "event_idx",
@@ -906,6 +1099,21 @@ def _motion_disturbance_table(rows: list[dict[str, object]]) -> str:
     return f"<table><thead><tr>{head}</tr></thead><tbody>{''.join(body)}</tbody></table>"
 
 
+def _diagnostic_table(rows: list[dict[str, object]]) -> str:
+    if not rows:
+        return "<p>No rows.</p>"
+    columns = list(rows[0].keys())
+    head = "".join(f"<th>{html.escape(column)}</th>" for column in columns)
+    body = []
+    for row in rows:
+        body.append(
+            "<tr>"
+            + "".join(f"<td>{html.escape(_fmt_cell(row.get(column, '')))}</td>" for column in columns)
+            + "</tr>"
+        )
+    return f"<table><thead><tr>{head}</tr></thead><tbody>{''.join(body)}</tbody></table>"
+
+
 def _motion_disturbance_description(row: dict[str, object]) -> str:
     return (
         f"Event {int(row['event_idx'])}: start pitch "
@@ -914,6 +1122,48 @@ def _motion_disturbance_description(row: dict[str, object]) -> str:
         f"{float(row['target_motion_vector_deg']):.2f} deg; disturbance vector "
         f"{float(row['disturbance_vector_abs_deg']):.2f} deg."
     )
+
+
+def _yaw_10_20_description(selection_label: str, row: dict[str, object]) -> str:
+    arrival = _fmt_s(_finite_or_none(row["arrival_latency_s"]))
+    settling = _fmt_s(_finite_or_none(row["settling_time_s"]))
+    lag = _fmt_s(_finite_or_none(row["trajectory_lag_s"]))
+    return (
+        f"{selection_label}, episode {int(row['episode_idx'])}: "
+        f"{float(row['initial_target_deg']):.2f} deg to {float(row['final_target_deg']):.2f} deg "
+        f"({float(row['magnitude_deg']):.2f} deg), arrival {arrival}, settling {settling}, "
+        f"trajectory lag {lag}, duration {float(row['duration_s']):.3f} s, "
+        f"target held {float(row['target_hold_after_s']) * 1000.0:.0f} ms, "
+        f"target updates {int(row['target_update_count'])}, "
+        f"largest-step fraction {float(row['target_largest_step_fraction']):.2f}, "
+        f"step-like={int(row['is_step_like_target'])}."
+    )
+
+
+def _magnitude_bin_label(magnitude: float, bin_width_deg: float) -> str:
+    start = 10.0 + np.floor((magnitude - 10.0) / bin_width_deg) * bin_width_deg
+    stop = min(20.0, start + bin_width_deg)
+    return f"{start:.0f}-{stop:.0f} deg"
+
+
+def _finite_array(rows: list[dict[str, object]], key: str) -> np.ndarray:
+    values = np.array([float(row.get(key, np.nan)) for row in rows], dtype=float)
+    return values[np.isfinite(values)]
+
+
+def _safe_median(values: np.ndarray) -> float:
+    if len(values) == 0:
+        return np.nan
+    return float(np.median(values))
+
+
+def _safe_median_ms(values: np.ndarray) -> float:
+    median = _safe_median(values)
+    return float(median * 1000.0) if np.isfinite(median) else np.nan
+
+
+def _slug(value: str) -> str:
+    return value.lower().replace(" ", "_").replace("-", "_")
 
 
 def _finite(value: object) -> bool:

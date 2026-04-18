@@ -14,7 +14,7 @@ Generated files:
 - `outputs/report.html`: visual companion report with scatter plots and summary tables.
 - `outputs/overview.csv`: stream sizes, sample rates, and value ranges.
 - `outputs/movement_metrics.csv`: one row per detected movement episode.
-- `outputs/movement_summary.csv`: latency and overshoot summaries by axis and movement magnitude.
+- `outputs/movement_summary.csv`: broad latency and overshoot summaries over all detected movement episodes.
 - `outputs/movement_regression.csv`: simple linear/quadratic checks for magnitude-latency relationships.
 - `outputs/shot_metrics.csv`: one row per fire event with stability flags.
 - `outputs/shot_summary.csv`: disturbance summaries for all shots and stable-target shots.
@@ -25,6 +25,9 @@ Generated files:
 - `outputs/system_id.html`: exploratory plots for peak velocity and 90% velocity-rise time.
 - `outputs/motion_disturbance_examples.csv`: moving-target fire examples selected across starting pitch/yaw angles.
 - `outputs/motion_disturbance.html`: many time-series examples of firing disturbance while the turret is moving.
+- `outputs/yaw_10_20_diagnostic_summary.csv`: 2 degree bins for the anomalous yaw 10-20 deg movement range.
+- `outputs/yaw_10_20_diagnostics.html`: low/median/high arrival examples from each yaw 10-20 deg sub-bin.
+- `outputs/system_id_step_summary.csv`: magnitude-bin summary of the preserved step-response subset.
 
 The existing `.venv` already has the required packages. If rebuilding the environment:
 
@@ -64,8 +67,8 @@ Arrival and settling intentionally use different bands. Arrival uses the broader
 
 The generated summaries are split by axis. Use:
 
-- `movement_summary.csv` for median/p90 arrival, settling, trajectory lag, and overshoot by magnitude bin.
-- `movement_regression.csv` to check whether latency grows linearly with movement magnitude.
+- `system_id_step_summary.csv` for the filtered step-response latency, settling, velocity, and overshoot summary used in the main report.
+- `movement_summary.csv` only when you need the broad all-episode summary, including ramps and sweeps.
 - `movement_metrics.csv` for detailed outlier inspection.
 
 ### 3. Shooting Impact
@@ -129,6 +132,6 @@ Start by explaining that the recording is not just a list of clean step commands
 
 Then use the generated report to answer:
 
-- How latency changes with movement magnitude: cite the magnitude-bin table and the low/high regression strength.
+- How latency changes with movement magnitude: cite the filtered step-response summary table and discuss linearity qualitatively from Figure 2 and `system_id.html`.
 - Pitch vs yaw differences: compare median trajectory lag, arrival, settling, and overshoot.
 - Shooting impact: use the stable-target, non-trivial-disturbance subset for the clean mechanical disturbance estimate, and mention that all-shot metrics are more confounded by target motion.

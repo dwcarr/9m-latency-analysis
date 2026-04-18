@@ -17,9 +17,14 @@ from motor_analysis.plots import (
     write_exemplar_plots,
     write_motion_disturbance_page,
     write_outlier_inspection_page,
+    write_yaw_10_20_diagnostic_page,
 )
 from motor_analysis.report import write_csv, write_html_report, write_json, write_markdown_report
-from motor_analysis.system_id import build_system_id_step_response_rows, write_system_id_page
+from motor_analysis.system_id import (
+    build_system_id_step_response_rows,
+    summarize_system_id_step_responses,
+    write_system_id_page,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,6 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--motion-disturbance-examples", type=int, default=24)
     parser.add_argument("--motion-disturbance-min-vector-deg", type=float, default=0.25)
     parser.add_argument("--motion-disturbance-min-target-motion-deg", type=float, default=1.0)
+    parser.add_argument("--yaw-diagnostic-examples-per-bin", type=int, default=3)
     parser.add_argument("--system-id-min-arrival-latency-s", type=float, default=0.05)
     return parser.parse_args()
 
@@ -93,7 +99,15 @@ def main() -> int:
         min_vector_deg=args.motion_disturbance_min_vector_deg,
         min_target_motion_deg=args.motion_disturbance_min_target_motion_deg,
     )
+    yaw_diagnostic_summary_rows, yaw_diagnostic_example_rows = write_yaw_10_20_diagnostic_page(
+        output_dir,
+        streams,
+        movement_rows,
+        config,
+        examples_per_bin=args.yaw_diagnostic_examples_per_bin,
+    )
     system_id_rows = build_system_id_step_response_rows(streams, movement_rows, config)
+    system_id_summary_rows = summarize_system_id_step_responses(system_id_rows)
     write_system_id_page(output_dir, system_id_rows, config)
     write_csv(output_dir / "overview.csv", overview_rows)
     write_csv(output_dir / "movement_metrics.csv", movement_rows)
@@ -104,13 +118,17 @@ def main() -> int:
     write_csv(output_dir / "exemplars.csv", exemplar_rows)
     write_csv(output_dir / "outlier_inspection.csv", outlier_rows)
     write_csv(output_dir / "motion_disturbance_examples.csv", motion_disturbance_rows)
+    write_csv(output_dir / "yaw_10_20_diagnostic_summary.csv", yaw_diagnostic_summary_rows)
+    write_csv(output_dir / "yaw_10_20_diagnostic_examples.csv", yaw_diagnostic_example_rows)
     write_csv(output_dir / "system_id_step_responses.csv", system_id_rows)
+    write_csv(output_dir / "system_id_step_summary.csv", system_id_summary_rows)
     write_json(output_dir / "analysis_config.json", config.__dict__)
     write_markdown_report(
         output_dir / "summary.md",
         overview_rows,
         movement_rows,
         movement_summary,
+        system_id_summary_rows,
         shot_rows,
         shot_summary,
         exemplar_rows,
@@ -121,6 +139,7 @@ def main() -> int:
         overview_rows,
         movement_rows,
         movement_summary,
+        system_id_summary_rows,
         shot_summary,
         exemplar_rows,
         config,
@@ -133,11 +152,13 @@ def main() -> int:
     print(f"Exemplar plots: {len(exemplar_rows)}")
     print(f"Outlier examples: {len(outlier_rows)}")
     print(f"Motion disturbance examples: {len(motion_disturbance_rows)}")
+    print(f"Yaw 10-20 diagnostic examples: {len(yaw_diagnostic_example_rows)}")
     print(f"System ID step responses: {len(system_id_rows)}")
     print(f"Summary: {(output_dir / 'summary.md').resolve()}")
     print(f"HTML report: {(output_dir / 'report.html').resolve()}")
     print(f"Outlier page: {(output_dir / 'outlier_inspection.html').resolve()}")
     print(f"Motion disturbance page: {(output_dir / 'motion_disturbance.html').resolve()}")
+    print(f"Yaw 10-20 diagnostics page: {(output_dir / 'yaw_10_20_diagnostics.html').resolve()}")
     print(f"System ID page: {(output_dir / 'system_id.html').resolve()}")
     return 0
 

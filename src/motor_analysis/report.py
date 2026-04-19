@@ -77,6 +77,9 @@ def write_markdown_report(
     lines.append(
         "- Fire disturbance is measured as current-minus-target error relative to the pre-fire baseline. Stable-target shots are reported separately because moving targets confound pure mechanical deflection."
     )
+    lines.append(
+        f"- Shot recovery is computed per axis from the baseline-subtracted disturbance. After the post-fire peak, the signal must stay within max({config.shot_recovery_floor_deg:.2f} deg, {config.shot_recovery_fraction_of_peak:.0%} of that axis peak) for {config.settle_hold_s * 1000:.0f} ms; the reported recovery time is the end of that hold window, measured from the Fire timestamp."
+    )
     lines.append("")
     lines.append("## Key Configuration")
     lines.append("")

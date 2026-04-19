@@ -12,6 +12,7 @@ This report is generated from `motor.rrd` by `scripts/analyze_motor.py`.
 - `settling_time_s` uses a tighter settling band than arrival and marks the end of the configured hold window: the current position must remain inside that band continuously for the full hold time.
 - `trajectory_lag_s` estimates control-loop delay during the commanded movement by delaying the target trajectory and choosing the delay with the lowest RMSE to actual position.
 - Fire disturbance is measured as current-minus-target error relative to the pre-fire baseline. Stable-target shots are reported separately because moving targets confound pure mechanical deflection.
+- Shot recovery is computed per axis from the baseline-subtracted disturbance. After the post-fire peak, the signal must stay within max(0.05 deg, 20% of that axis peak) for 50 ms; the reported recovery time is the end of that hold window, measured from the Fire timestamp.
 
 ## Key Configuration
 

@@ -4,8 +4,8 @@ This repository contains a repeatable analysis workflow for `motor.rrd`, a Rerun
 
 ## Key Deliverables
 
-- `outputs/report.html`: The main visual report with scatter plots and summary tables.
-- `outputs/summary.md`: description of the analysis methodology, headline results, and tables.
+- [`outputs/report.html`](outputs/report.html): The main visual report with scatter plots and summary tables.
+- [`outputs/summary.md`](outputs/summary.md): description of the analysis methodology, headline results, and tables.
 - Python source code for the analysis workflow.
 
 ## Quick Start

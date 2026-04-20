@@ -25,24 +25,24 @@ The motor.rrd file is not included in this repository, and should be copied to t
 
 Generated files:
 
-- `outputs/summary.md`: written report with methodology, headline results, and tables.
-- `outputs/report.html`: visual companion report with scatter plots and summary tables.
-- `outputs/overview.csv`: stream sizes, sample rates, and value ranges.
-- `outputs/movement_metrics.csv`: one row per detected movement episode.
-- `outputs/movement_summary.csv`: broad latency and overshoot summaries over all detected movement episodes.
-- `outputs/movement_regression.csv`: simple linear/quadratic checks for magnitude-latency relationships.
-- `outputs/shot_metrics.csv`: one row per fire event with stability flags.
-- `outputs/shot_summary.csv`: disturbance summaries for all shots and stable-target shots.
-- `outputs/analysis_config.json`: exact thresholds used for the run.
-- `outputs/exemplars.csv`: automatically selected examples used for the time-series plots.
-- `outputs/plots/*.svg`: exemplary time-series plots for small/large movements and firing response categories.
-- `outputs/system_id_step_responses.csv`: preserved step-response subset for system identification, with velocity metrics.
-- `outputs/system_id.html`: exploratory plots for peak velocity and 90% velocity-rise time.
-- `outputs/motion_disturbance_examples.csv`: moving-target fire examples selected across starting pitch/yaw angles.
-- `outputs/motion_disturbance.html`: many time-series examples of firing disturbance while the turret is moving.
-- `outputs/yaw_10_20_diagnostic_summary.csv`: 2 degree bins for the anomalous yaw 10-20 deg movement range. Used to justify restricting the data considered for Table 1.
-- `outputs/yaw_10_20_diagnostics.html`: low/median/high arrival examples from each yaw 10-20 deg sub-bin. Use to justify restricting the data considered for Table 1.
-- `outputs/system_id_step_summary.csv`: magnitude-bin summary of the preserved step-response subset.
+- [`outputs/summary.md`](outputs/summary.md): written report with methodology, headline results, and tables.
+- [`outputs/report.html`](outputs/report.html): visual companion report with scatter plots and summary tables.
+- [`outputs/overview.csv`](outputs/overview.csv): stream sizes, sample rates, and value ranges.
+- [`outputs/movement_metrics.csv`](outputs/movement_metrics.csv): one row per detected movement episode.
+- [`outputs/movement_summary.csv`](outputs/movement_summary.csv): broad latency and overshoot summaries over all detected movement episodes.
+- [`outputs/movement_regression.csv`](outputs/movement_regression.csv): simple linear/quadratic checks for magnitude-latency relationships.
+- [`outputs/shot_metrics.csv`](outputs/shot_metrics.csv): one row per fire event with stability flags.
+- [`outputs/shot_summary.csv`](outputs/shot_summary.csv): disturbance summaries for all shots and stable-target shots.
+- [`outputs/analysis_config.json`](outputs/analysis_config.json): exact thresholds used for the run.
+- [`outputs/exemplars.csv`](outputs/exemplars.csv): automatically selected examples used for the time-series plots.
+- [`outputs/plots/*.svg`](outputs/plots/*.svg): exemplary time-series plots for small/large movements and firing response categories.
+- [`outputs/system_id_step_responses.csv`](outputs/system_id_step_responses.csv): preserved step-response subset for system identification, with velocity metrics.
+- [`outputs/system_id.html`](outputs/system_id.html): exploratory plots for peak velocity and 90% velocity-rise time.
+- [`outputs/motion_disturbance_examples.csv`](outputs/motion_disturbance_examples.csv): moving-target fire examples selected across starting pitch/yaw angles.
+- [`outputs/motion_disturbance.html`](outputs/motion_disturbance.html): many time-series examples of firing disturbance while the turret is moving.
+- [`outputs/yaw_10_20_diagnostic_summary.csv`](outputs/yaw_10_20_diagnostic_summary.csv): 2 degree bins for the anomalous yaw 10-20 deg movement range. Used to justify restricting the data considered for Table 1.
+- [`outputs/yaw_10_20_diagnostics.html`](outputs/yaw_10_20_diagnostics.html): low/median/high arrival examples from each yaw 10-20 deg sub-bin. Use to justify restricting the data considered for Table 1.
+- [`outputs/system_id_step_summary.csv`](outputs/system_id_step_summary.csv): magnitude-bin summary of the preserved step-response subset.
 
 ## What The Workflow Measures
 

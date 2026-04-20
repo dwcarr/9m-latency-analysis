@@ -1,4 +1,4 @@
-# 9mothers Motor Latency Analysis
+# Motor Latency Analysis
 
 This repository contains a repeatable analysis workflow for `motor.rrd`, a Rerun recording of motor telemetry.
 
